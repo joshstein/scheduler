@@ -1,8 +1,5 @@
-# sup d00d
-
 from utils import *
 
-print 'this will eventually not suck.'
 
 class Scheduler():
   """ Input will contain two things:
@@ -35,31 +32,43 @@ class Scheduler():
         2: nested list where each list of lists represents each day of the week and their respective lists represent the time slots for their days
       """
   def __init__(self):
+    self.classes = []
     self.allSchedules = [[]]
     self.currentSchedule = [[]]
     
   
-  AddClass(self):
+  def AddClass(self):
     """ Adds a single class to the schedule, 
     can return success/failure"""
   
-  RemoveClass(self):
+  def RemoveClass(self):
     """ Removes a single class from the schedule, 
     can return success/failure"""
   
-  IsSlotOpen(self):
+  def IsSlotOpen(self):
     """ Checks to see if time slot for a class does 
     not coincide with current schedule. Returns true or false"""
    
-  IsScheduleComplete(self):
+  def IsScheduleComplete(self, schedule):
     """checks to see if all the classes that the student would 
     like to take have been scheduled. Returns true or false"""
+    for i in self.classes:
+      if not schedule.index(i):
+        return False
+    return True
   
-  ScheduleClasses(classes, catalog):
+  def SetUpScheduler(self):
+    ScheduleClasses()
+    
+  def ScheduleClasses(classes, catalog):
     """ a recursive function utilizing the depth-first search 
     algorithm. Will be implemented with a stack structure. """
     
+
     
     
+scheduler = Scheduler()
+    
+
     
     
