@@ -25,7 +25,7 @@ class Scheduler():
               And a call to one of the classes would be:
               someVar[classPrefix][classNum][sectionNum]
               
-              which returns the crn number.
+              which returns a tuple containing the remaining identifying information (professor, times, crn, days of week, etc.)
         
       Class will contain two data structures:
         1: a nested lists, where each individual list describes a single, possible schedule based on inputted desired classes.
@@ -64,10 +64,42 @@ class Scheduler():
     """ a recursive function utilizing the depth-first search 
     algorithm. Will be implemented with a stack structure. """
     
+def getClasses(file):
+  """ Accesses the data file that contains all the class data. Then it reads the data into a nested map.
+    returns the nested map
+  """
+  myIn = open(file, 'r')
+  classes = {}
+  while (True):
+    Title = myIn.readline() 
+    if Title == "":
+      break
+    
+    CRN = myIn.readline()
+    rubric = myIn.readline()
+    courseNum = myIn.readline()
+    section = myIn.readline()
+    semester = myIn.readline()
+    year = myIn.readline()
+    misc = myIn.readline()
+    startTime = myIn.readline()
+    endTime = myIn.readline()
+    daysOfWeek = myIn.readline()
+    location = myIn.readline()
+    startDate = myIn.readline()
+    endDate = myIn.readline()
+    instructor = myIn.readline()
+    
+    
+    
+    classes[rubric][courseNum][section] = (CRN, startTime, endTime, daysOfWeek)
+  
 
+  
+  return classes
     
-    
-scheduler = Scheduler()
+classes = getClasses("data.txt")    
+s = Scheduler()
     
 
     
