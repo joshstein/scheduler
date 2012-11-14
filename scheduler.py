@@ -22,10 +22,8 @@ class Scheduler():
                         
                       etc,
                       }
-              And a call to one of the classes would be:
-              someVar[classPrefix][classNum][sectionNum]
-              
-              which returns a tuple containing the remaining identifying information (professor, times, crn, days of week, etc.)
+              An example assignment operation would be 
+              someVar[classPrefix][classNum][sectionNum] = (CRN, startTime, endTime, daysOfWeek)
         
       Class will contain two data structures:
         1: a nested lists, where each individual list describes a single, possible schedule based on inputted desired classes.
@@ -69,34 +67,34 @@ def getClasses(file):
     returns the nested map
   """
   myIn = open(file, 'r')
-  classes = {}
-  while (True):
-    Title = myIn.readline() 
-    if Title == "":
-      break
+  i = 0
+  classes = {} # holds the dict of all the classes
+  
+  ## (sorry, couldn't think of a better way to prevent an indexing error)...
+  data=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]     # holds all the data of the most current set of data
+                # Enumerates, from 0 to 15, for Title, CRN, rubric, courseNum, section, 
+                # semester, year, misc, startTime, endTime, daysOfWweek, location, startDate, endDate, and instructor
+
+  for line in open(file):
+    if line == "\n":
+      continue
+    data[i] = line #copy data over
+    data[i] = data[i][:-2]
+##    print str(i), 'equals', str(data[i])
+    i += 1
     
-    CRN = myIn.readline()
-    rubric = myIn.readline()
-    courseNum = myIn.readline()
-    section = myIn.readline()
-    semester = myIn.readline()
-    year = myIn.readline()
-    misc = myIn.readline()
-    startTime = myIn.readline()
-    endTime = myIn.readline()
-    daysOfWeek = myIn.readline()
-    location = myIn.readline()
-    startDate = myIn.readline()
-    endDate = myIn.readline()
-    instructor = myIn.readline()
-    
-    
-    
-    classes[rubric][courseNum][section] = (CRN, startTime, endTime, daysOfWeek)
+    if i == 16:
+      # updats dict
+      if data[2] not in classes: # create sub-dictionary if it doesn't exist already
+        classes[data[2]] = {}
+      if data[3] not in classes[data[2]]: # create sub-sub-dictionary if it doesn't exist already
+        classes[data[2]][data[3]] = {}
+      classes[data[2]][data[3]][data[4]] = (data[1], data[9], data[10], data[11])
+      i = 0
   
 
   
-  return classes
+  return classes # return completed list
     
 classes = getClasses("data.txt")    
 s = Scheduler()
