@@ -36,8 +36,7 @@ class Scheduler():
     self.allSchedules = [[]] 
     
     # list where each column is a day of the week and each row is a time slot representing 5 minutes of time from 8am to 9pm
-    self.currentSchedule = [[False for i in range(7)] for j in range(163)] 
-    
+    self.currentSchedule = [[False for i in range(163)] for j in range(7)] 
   
   def AddClass(self):
     """ Adds a single class to the schedule, 
@@ -47,9 +46,10 @@ class Scheduler():
     """ Removes a single class from the schedule, 
     can return success/failure"""
   
-  def IsSlotOpen(self):
+  def IsSlotOpen(self, day, key):
     """ Checks to see if time slot for a class does 
     not coincide with current schedule. Returns true or false"""
+    return
    
   def IsScheduleComplete(self, schedule):
     """checks to see if all the classes that the student would 
@@ -59,8 +59,9 @@ class Scheduler():
         return False
     return True
   
-  # sets up the recursive function, only input is a list up tuples, each containing the class prefic and course number.
+
   def SetUpScheduler(self, desiredClasses, catalog):
+    """sets up the recursive function, only input is a list up tuples, each containing the class prefic and course number."""
     stack = []
     stack.append(('','',-1)) #dummy value for stack. Will always be first after filling stack. Will be popped after stack is full
     numOfItems = 0
@@ -87,17 +88,21 @@ class Scheduler():
   def ScheduleClasses(self, classStack, catalog):
     """ a recursive function utilizing the depth-first search 
     algorithm. Will be implemented with a stack structure. """
+    if len(classStack) == 0:          # If there are no more classes to search for in 
+      return
+      
     return
     
-  def propagateData(self, additionalParameters):
-  """ function used to eliminate classes that can't be taken because of time conflicts"""
+  def propagateData(self, catalog):
+    """ function used to eliminate classes that can't be taken because of time conflicts"""
     return
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END CLASS DEFINITIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ UTILITY FUNCTIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#converts an integer to a list key
+#
 def timeToKey(time):
+  """converts an integer to a list key"""
   try:
     time -= 800         # bring number to at least 0
     key = time % 100     # evaluate the minutes of time
@@ -107,9 +112,19 @@ def timeToKey(time):
     return key
   except(TypeError):    # exception: input is the string 'TBA'
     return time
+
+def keyToTime(key):
+  """takes in a key value corresponding to the time of day within the 
+  schedule list and returns the time of day the key represents"""
+  
+  time = key/12
+  key = (key%12) * 5
+  time += key
+  return time
     
-# takes in a string with the format "hh:mm" and returns an int with te format hhmm
+ 
 def timeStringToInteger(string):
+  """takes in a string with the format "hh:mm" and returns an int with te format hhmm"""
   try:
     return int(string.replace(':', ''))
   except(ValueError): # exception: when input is TBA
