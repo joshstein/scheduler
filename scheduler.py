@@ -34,14 +34,15 @@ class Scheduler():
   def __init__(self):
     self.classes = []
     self.allSchedules = [[]] 
-    
+    self.daysOfWeek   = {'M' : 0, 'T' : 1, 'W' : 2, 'R' : 3, 'F' : 4, 'S' : 5}
     # list where each column is a day of the week and each row is a time slot representing 5 minutes of time from 8am to 9pm
-    self.currentSchedule = [[False for i in range(7)] for j in range(163)] 
+    self.currentSchedule = [[False for i in range(6)] for j in range(163)] 
     
   
   def AddClass(self):
     """ Adds a single class to the schedule, 
     can return success/failure"""
+    
   
   def RemoveClass(self):
     """ Removes a single class from the schedule, 
@@ -87,6 +88,9 @@ class Scheduler():
   def ScheduleClasses(self, classStack, catalog):
     """ a recursive function utilizing the depth-first search 
     algorithm. Will be implemented with a stack structure. """
+
+
+    
     return
     
   def propagateData(self, additionalParameters):
