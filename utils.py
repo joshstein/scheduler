@@ -638,27 +638,6 @@ def AIMAFile(components, mode='r'):
 def DataFile(name, mode='r'):
     "Return a file in the AIMA /data directory."
     return AIMAFile(['..', 'data', name], mode)
-
-
-    
-def timeToKey(time):
-  try:
-    time -= 800         # bring number to at least 0
-    key = time % 100     # evaluate the minutes of time
-    key /= 5            # divide minutes into multiples of 5
-    time /= 100         # truncate key so its only the hours of the day
-    key += time * 12    
-    return key
-  except(TypeError):    # exception: input is the string 'TBA'
-    return time
-    
-# takes in a string with the format "hh:mm" and returns an int with te format hhmm
-def timeStringToInteger(string):
-  try:
-    return int(string.replace(':', ''))
-  except(ValueError): # exception: when input is TBA
-    return string    
-    
     
 #______________________________________________________________________________
 # Queues: Stack, FIFOQueue, PriorityQueue

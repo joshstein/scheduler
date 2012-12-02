@@ -1,27 +1,103 @@
 from utils import *
 from search import *
 
-
-
 class ClassSearch(Problem):
   """ """
   
   def __init__ (self, initial, goal=None):
     self.initial = initial
     self.goal = goal
+    self.stack = goal
+    self.classes = []   # list of classes scheduled
+    self.allSchedules = [[]]  # a list of all complete schedules
     
-    self.classes = []
-    self.allSchedules = [[]]
     # list where each column is a day of the week and each row is a time slot representing 5 minutes of time from 8am to 9pm
     self.currentSchedule = [[False for i in range(6)] for j in range(163)] 
 
+  def goal_test (self, state):
+    """ Checks to see if the current schedule is a permutation of the desired list of classes"""
+    for i in self.goal:
+      if not i in state:
+        return False
+    return True
   
-  def successor (self, state):
-    """ WORK ON THIS """
   
+  def addClass (self, startTime, endTime, daysOfWeek):
+  
+    for i in daysOfWeek:
+      for j in range (timeToKey(startTime), timeToKey(endTime)):
+        currentSchedule[i][j] = True
+        
+  def removeClass (self, startTime, endTime, daysOfWeek):
+    for i in daysOfWeek:
+      for j in range (timeToKey(startTime), timeToKey(endTime)):
+        currentSchedule[dayOfWeek(i)][j] = False  
+  
+  
+  
+  
+  
+  ## this fucntion is a work in progress. I might not have a good understandign of the problem, but this is the best I've got so far...
+  
+  def successor (self, state):        
+    """ successors are defined in (action, state) pairs. 
+      The action is the class that is being scheduled while the state is the list of cla """
+    
+    availableClasses = []
+    nextAvailableClasses = []
+    successors = []
+    nextClass = 0
+    currClass = self.stack.pop()
+    availableClasses = catalog[currClass[0]][currClass[1]]
+    availableClasses = propagateClasses(availableClasses)
+    
+    for i in availableClasses.keys():
+      item = availableClasses[i]
+      addClass(item[1], item[2], item[3])
+      nextClass = self.stack[-1] # peek at next item
+      nextAvailableClasses = catalog[nextClass[0]][nextClass[1]
+      nextAvailableClasses = propagate(nextAvailableClasses)
+      removeClass(item[1], item[2], item[3])
+      successors.append(((currClass[0], currClass[1], i), nextAvailableClasses)) 
+  
+    
+    
+    
+    
+    
+    
+    
+  def propagate (self, catalogList):
+    """ Takes in a list of tuples of available sections of a class (from the catalog) 
+    and returns a list of classes that don't coincide with the 
+    current overall schedule
+    
+    It's essentially cutting off a branch of classes such that classes[prefix][courseNum] --- [sectionNum]= (~~~~~)
+    is used
+    """
+    
+    newList = []
+    
+    for i in catalogList: # for each each class...
+      isConflicted = False  # reset flag
+      
+      for j in i[3]:        # for each day that the class is scheduled for...
+        for k in range(timeToKey( i[1]) , timeToKey( i[2] )):   # for each time slot between startTime and endTime
+          if self.currentSchedule[j][k] == True:                # check for time conflict (short circuits loop if conflict is found)
+            isConflicted = True
+            break
+        if isConflicted:
+          break
+      if not isConflicted:        # if there is no conflict, append item to the list
+        newList.append((i))
+    
+    return newList
+    
 
-  # sets up the recursive function, only input is a list up tuples, each containing the class prefic and course number.
-def SetUpScheduler(desiredClasses, catalog):
+def SetUpStack(desiredClasses, catalog):
+  """ sets up the recursive function, only input is a list up tuples, 
+  each containing the class prefix and course number."""
+  
   stack = []
   stack.append(('','',-1)) #dummy value for stack. Will always be first after filling stack. Will be popped after stack is full
   numOfItems = 0
@@ -48,7 +124,29 @@ def SetUpScheduler(desiredClasses, catalog):
     
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ UTILITY FUNCTIONS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #converts an integer to a list key
+daysOfWeek = {'S' : 0, 'M' : 1, 'T' : 2, 'W' : 3, 'R' : 4, 'F' : 5}
 
+def dayOfWeek(char):
+  return daysOfWeek[char]
+
+def timeToKey(time):
+  try:
+    time -= 800         # bring number to at least 0
+    key = time % 100     # evaluate the minutes of time
+    key /= 5            # divide minutes into multiples of 5
+    time /= 100         # truncate key so its only the hours of the day
+    key += time * 12    
+    return key
+  except(TypeError):    # exception: input is the string 'TBA'
+    return time
+    
+# takes in a string with the format "hh:mm" and returns an int with te format hhmm
+def timeStringToInteger(string):
+  try:
+    return int(string.replace(':', ''))
+  except(ValueError): # exception: when input is TBA
+    return string    
+    
     
 def getClasses(file):
   """ Accesses the data file that contains all the class data. Then it reads the data into a nested map.
@@ -84,10 +182,12 @@ def getClasses(file):
       # am and pm arent denoted, but classes at 800 are assumed to be 8am, anything less than that is assumed to be in the pm. add 12 hours
       if (data[9] < 800):
         data[9] += 1200
+        data[9] += 1200
         data[10] += 1200
         
-      # add new dict entry
+      # add new dict entry   
       classes[data[2]][data[3]][data[4]] = (data[1], data[9], data[10], data[11])
+              # classes [prefix] [courseNum] [sectionNum] = (CRN, StartTime, EndTime, DaysOfWeek)
       i = 0
   
 
@@ -95,8 +195,10 @@ def getClasses(file):
   return classes # return completed list
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END UTILITY FUNCTION DEFINITIONS~~~~~~~~~~~~~~~~~~~~~~
 
+
+
   
-classes = getClasses("data.txt")    
+catalog = getClasses("data.txt")    
 desiredClasses = [('CSCI', '1170'), ('MATH', '1910'), ('ENGL', '1010'), ('COMM','2200')] # test driver data
-stack = SetUpScheduler(desiredClasses, classes)
-c = ClassSearch()
+stack = SetUpStack(desiredClasses, catalog)
+c = ClassSearch([], stack)
