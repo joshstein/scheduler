@@ -100,14 +100,16 @@ def tree_search(problem, fringe):
         fringe.extend(node.expand(problem))
     return None
 
+
+def depth_first_tree_search(problem):
+    "Search the deepest nodes in the search tree first. [p 74]"
+    return tree_search(problem, Stack())
+    
 def breadth_first_tree_search(problem):
     "Search the shallowest nodes in the search tree first. [p 74]"
     return tree_search(problem, FIFOQueue())
     
-def depth_first_tree_search(problem):
-    "Search the deepest nodes in the search tree first. [p 74]"
-    return tree_search(problem, Stack())
-
+    
 def graph_search(problem, fringe):
     """Search through the successors of a problem to find a goal.
     The argument fringe should be an empty queue.

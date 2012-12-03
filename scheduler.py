@@ -7,23 +7,23 @@ class ClassSearch(Problem):
   def __init__ (self, initial, goal=None):
     self.initial = initial
     self.goal = goal
-    self.stack = goal
     self.classes = []   # list of classes scheduled
     self.allSchedules = [[]]  # a list of all complete schedules
     
     # list where each column is a day of the week and each row is a time slot representing 5 minutes of time from 8am to 9pm
-    self.currentSchedule = [[False for i in range(6)] for j in range(163)] 
-
+    self.currentSchedule = [[False for i in range(163)] for j in range(6)] 
+  
+  def handleGoal(self):
+    return
+  
   def goal_test (self, state):
-    """ Checks to see if the current schedule is a permutation of the desired list of classes"""
-    for i in self.goal:
-      if not i in state:
-        return False
-    return True
+    """ if the current state is the same length as the goal, then we have reached the goal state"""
+    if len(state) == len(self.goal):
+      return True
+    return False
   
   
-  def addClass (self, startTime, endTime, daysOfWeek):
-  
+  def addClass (self, startTime, endTime, daysOfWeek): 
     for i in daysOfWeek:
       for j in range (timeToKey(startTime), timeToKey(endTime)):
         currentSchedule[i][j] = True
@@ -41,31 +41,25 @@ class ClassSearch(Problem):
   
   def successor (self, state):        
     """ successors are defined in (action, state) pairs. 
-      The action is the class that is being scheduled while the state is the list of cla """
+      The action is the class that is being scheduled while the state is the list of classes scheduled so far, including the just added class"""
     
     availableClasses = []
-    nextAvailableClasses = []
     successors = []
-    nextClass = 0
-    currClass = self.stack.pop()
+    currClassIndex = len(self.goal) - len(state) - 1
+
+    currClass = self.goal[currClassIndex]
     availableClasses = catalog[currClass[0]][currClass[1]]
-    availableClasses = propagateClasses(availableClasses)
+
     
-    for i in availableClasses.keys():
-      item = availableClasses[i]
-      addClass(item[1], item[2], item[3])
-      nextClass = self.stack[-1] # peek at next item
-      nextAvailableClasses = catalog[nextClass[0]][nextClass[1]
-      nextAvailableClasses = propagate(nextAvailableClasses)
-      removeClass(item[1], item[2], item[3])
-      successors.append(((currClass[0], currClass[1], i), nextAvailableClasses)) 
+    availableClasses = self.propagate(availableClasses)
+    
+    for i in availableClasses:
+      newState = []
+      newState.extend(state)
+      newState.append((currClass[0], currClass[1], i))
+      successors.append(((currClass[0], currClass[1], i), newState))
   
-    
-    
-    
-    
-    
-    
+    return successors
     
   def propagate (self, catalogList):
     """ Takes in a list of tuples of available sections of a class (from the catalog) 
@@ -81,16 +75,18 @@ class ClassSearch(Problem):
     for i in catalogList: # for each each class...
       isConflicted = False  # reset flag
       
-      for j in i[3]:        # for each day that the class is scheduled for...
-        for k in range(timeToKey( i[1]) , timeToKey( i[2] )):   # for each time slot between startTime and endTime
-          if self.currentSchedule[j][k] == True:                # check for time conflict (short circuits loop if conflict is found)
-            isConflicted = True
-            break
+      for j in catalogList[i][3]:        # for each day that the class is scheduled for...
+        try:
+          for k in range(timeToKey( catalogList[i][1]) , timeToKey( catalogList[i][2] )):   # for each time slot between startTime and endTime
+            if self.currentSchedule[dayOfWeek(j)][k] == True:                # check for time conflict (short circuits loop if conflict is found)
+              isConflicted = True
+              break
+        except(TypeError):
+          continue
         if isConflicted:
           break
       if not isConflicted:        # if there is no conflict, append item to the list
-        newList.append((i))
-    
+        newList.append((catalogList[i]))
     return newList
     
 
@@ -164,7 +160,7 @@ def getClasses(file):
     if line == "\n":
       continue
     data[i] = line #copy data over
-    data[i] = data[i][:-2]
+    data[i] = data[i][:-2] # remove vertical bar and return carriage
     
     i += 1
     
@@ -202,3 +198,5 @@ catalog = getClasses("data.txt")
 desiredClasses = [('CSCI', '1170'), ('MATH', '1910'), ('ENGL', '1010'), ('COMM','2200')] # test driver data
 stack = SetUpStack(desiredClasses, catalog)
 c = ClassSearch([], stack)
+
+result = depth_first_tree_search(c)
