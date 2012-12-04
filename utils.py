@@ -684,7 +684,7 @@ class FIFOQueue(Queue):
         return e
 
 class PriorityQueue(Queue):
-    """A queue in which the minimum (or maximum) element (as determined by f and
+    """ A queue in which the minimum (or maximum) element (as determined by f and
     order) is returned first. If order is min, the item with minimum f(x) is
     returned first; if order is max, then it is the item with maximum f(x)."""
     def __init__(self, order=min, f=lambda x: x):
