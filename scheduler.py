@@ -11,51 +11,47 @@ class ClassSearch(Problem):
     self.allSchedules = []  # a list of all complete schedules
     
     # list where each column is a day of the week and each row is a time slot representing 5 minutes of time from 8am to 9pm
-    self.currentSchedule = [[False for i in range(163)] for j in range(6)] 
+    self.currentSchedule = [[False for i in range(157)] for j in range(6)] 
   
   def handleGoal(self, state):
     self.allSchedules.append(state)
-    item = state.pop()
-    item = catalog[item[0]][item[1]][item[2]]
-   
-    self.removeClass(item[1], item[2], item[3])
-
     return
   
   def goal_test (self, state):
     """ if the current state is the same length as the goal, then we have reached the goal state"""
     if len(state) == len(self.goal):
-##      self.handleGoal(state)
+      self.handleGoal(state)
       return True
     return False
   
   
   def addClass (self, startTime, endTime, daysOfWeek): 
-
     for i in daysOfWeek:
       for j in range (timeToKey(startTime), timeToKey(endTime)):
-        self.currentSchedule[dayOfWeek(i)][timeToKey(j)] = True
+        self.currentSchedule[dayOfWeek(i)][j] = True
     
-        
   def removeClass (self, startTime, endTime, daysOfWeek):
-
     for i in daysOfWeek:
       for j in range (timeToKey(startTime), timeToKey(endTime)):
-        self.currentSchedule[dayOfWeek(i)][timeToKey(j)] = False  
+        self.currentSchedule[dayOfWeek(i)][j] = False  
   
   def printSchedule(self):
     string = ''
-    for i in range(163):
+    print "Time:\tSat.\tMon\tTues.\tWed.\tThurs.\tFri.\t"
+    for i in range(157):
       string = ''
       for j in range (6):
-        string += str(self.currentSchedule[j][i]) + '\t'
-      print i, string
+        if self.currentSchedule[j][i]:
+          string += '1' + '\t'
+        else:
+          string += '0' + '\t'
+      print keyToTime(i), string
       
       
   
   
-  ## this fucntion is a work in progress. I might not have a good understandign of the problem, but this is the best I've got so far...
-  
+
+
   def successor (self, state):        
     """ successors are defined in (action, state) pairs. 
       The action is the class that is being scheduled while the state is the list of classes scheduled so far, including the just added class"""
@@ -83,16 +79,10 @@ class ClassSearch(Problem):
       newState.append((currClass[0], currClass[1], i[0]))          # add this c
       successors.append(((currClass[0], currClass[1], i[0]), newState))
       
+    for i in state:
+      item = catalog[i[0]][i[1]][i[2]]
+      self.removeClass(item[1], item[2], item[3])     
       
-##    for i in state:
-##      item = catalog[i[0]][i[1]][i[2]]      
-##      self.removeClass(item[1], item[2], item[3])
-
-##    for i in successors:
-##      print i[0], i[1][0]
-##      for j in i[1][1:]:
-##        print '\t\t', j
-##      print '\n'
     return successors
     
   def propagate (self, catalogList):
@@ -103,7 +93,7 @@ class ClassSearch(Problem):
     It's essentially cutting off a branch of classes such that classes[prefix][courseNum] --- [sectionNum]= (~~~~~)
     is used
     """
-    print len(catalogList)
+#    print len(catalogList)
     newList = []
     
     for i in catalogList: # for each each class...
@@ -119,10 +109,10 @@ class ClassSearch(Problem):
       if not isConflicted:        # if there is no conflict, append item to the list
         newList.append((i, catalogList[i]))
     
-    print len(newList)
+ #   print len(newList)
     return newList
-    
-
+   
+  
 def SetUpStack(desiredClasses, catalog):
   """ sets up the recursive function, only input is a list up tuples, 
   each containing the class prefix and course number."""
@@ -158,6 +148,14 @@ daysOfWeek = {'S' : 0, 'M' : 1, 'T' : 2, 'W' : 3, 'R' : 4, 'F' : 5}
 def dayOfWeek(input):
   return daysOfWeek[input]
 
+def printSchedule(node):
+  state = node.state
+  print "~~~~~RESULTING SCHEDULE~~~~~"
+  for i in state:
+    item = catalog[i[0]][i[1]][i[2]]
+    print i[0], ' ', i[1], ' ', i[2], '\t' , "From: ", item[1], "To: ", item[2], "On: ", item[3], ". CRN: ", item[0]
+  return
+  
 def timeToKey(time):
   time -= 800         # bring number to at least 0
   key = time % 100     # evaluate the minutes of time
@@ -165,16 +163,25 @@ def timeToKey(time):
   time /= 100         # truncate key so its only the hours of the day
   key += time * 12    
   return key
+  
+def keyToTime(key):
+  """takes in a key value corresponding to the time of day within the 
+  schedule list and returns the time of day the key represents"""
 
+  time = key/12
+  key = (key % 12) * 5
+  time = time * 100 + 800
+  time += key
+ 
+  return time
     
     
     
 # takes in a string with the format "hh:mm" and returns an int with te format hhmm
 def timeStringToInteger(string):
   return int(string.replace(':', ''))
- 
-    
-    
+  
+  
 def getClasses(file):
   """ Accesses the data file that contains all the class data. Then it reads the data into a nested map.
     returns the nested map
@@ -213,7 +220,6 @@ def getClasses(file):
       # am and pm arent denoted, but classes at 800 are assumed to be 8am, anything less than that is assumed to be in the pm. add 12 hours
       if (data[9] < 800):
         data[9] += 1200
-        data[9] += 1200
         data[10] += 1200
       # add new dict entry   
       classes[data[2]][data[3]][data[4]] = (data[1], data[9], data[10], data[11])
@@ -229,8 +235,9 @@ def getClasses(file):
 
   
 catalog = getClasses("data.txt")    
-desiredClasses = [('CSCI', '1170'), ('MATH', '1910'), ('ENGL', '1010'), ('COMM','2200')] # test driver data
+desiredClasses = [('CSCI', '1170'), ('MATH', '1910'), ('ENGL', '1010'), ('COMM','2200'), ('ENGL', '1020')] # test driver data
 stack = SetUpStack(desiredClasses, catalog)
 c = ClassSearch([], stack)
 # c.printSchedule()
 result = depth_first_tree_search(c)
+printSchedule(result)
